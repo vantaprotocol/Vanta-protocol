@@ -1,0 +1,23 @@
+{
+"name": "@vanta/api",
+"version": "1.0.0",
+"type": "commonjs",
+"main": "dist/index.js",
+"scripts": {
+"build": "tsc -p tsconfig.json",
+"dev": "tsx watch src/index.ts"
+},
+"dependencies": {
+"better-sqlite3": "^9.6.0",
+"cors": "^2.8.5",
+"dotenv": "^16.4.5",
+"express": "^4.19.2",
+"uuid": "^9.0.1",
+"tweetnacl": "^1.0.3",
+"@solana/web3.js": "^1.95.2"
+},
+"devDependencies": {
+"tsx": "^4.19.2",
+"typescript": "^5.6.3"
+}
+}

@@ -1,0 +1,89 @@
+<!doctype html>
+const res = await p.connect();
+wallet = res.publicKey;
+pubkeySpan.textContent = wallet.toBase58();
+};
+
+
+async function loadAgents(){
+const r = await fetch(`${API}/api/agents`);
+const agents = await r.json();
+const sel = $('agent');
+sel.innerHTML = agents.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+}
+
+
+$('submit-job').onclick = async()=>{
+const agentId = $('agent').value;
+const input = $('job-input').value.trim();
+const r = await fetch(`${API}/api/jobs`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agentId,input})});
+const j = await r.json();
+if (j.id){
+$('job-status').textContent = `Queued: ${j.id}`;
+pollJob(j.id);
+} else alert(JSON.stringify(j));
+};
+
+
+async function pollJob(id){
+const tick = async()=>{
+const r = await fetch(`${API}/api/jobs/${id}`);
+const j = await r.json();
+$('job-status').textContent = `Status: ${j.status}`;
+if (j.status==='succeeded'){
+$('last-output').textContent = JSON.stringify(j.output,null,2);
+$('job-id').value = id;
+clearInterval(timer);
+}
+};
+await tick();
+const timer = setInterval(tick, 1500);
+}
+
+
+$('create-receipt').onclick = async()=>{
+const jobId = $('job-id').value.trim();
+if (!jobId) return alert('Provide job id');
+const r = await fetch(`${API}/api/receipts/create`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobId})});
+const j = await r.json();
+if (j.hash){ $('job-hash').value = j.hash; $('chain-status').textContent = 'Receipt created (hash ready).'; }
+else alert(JSON.stringify(j));
+};
+
+
+$('write-memo').onclick = async()=>{
+if (!wallet) return alert('Connect Phantom first');
+const hash = $('job-hash').value.trim();
+const jobId = $('job-id').value.trim();
+if (!hash || !jobId) return alert('Create receipt first');
+
+
+const conn = new solanaWeb3.Connection(CLUSTER, 'confirmed');
+const tx = new solanaWeb3.Transaction();
+const ix = new solanaWeb3.TransactionInstruction({
+programId: SPL_MEMO,
+keys: [],
+data: new TextEncoder().encode(`VANTA_RECEIPT:${hash}`)
+});
+tx.add(ix);
+tx.feePayer = wallet;
+tx.recentBlockhash = (await conn.getLatestBlockhash()).blockhash;
+
+
+const provider = await getProvider();
+const signed = await provider.signTransaction(tx);
+const sig = await conn.sendRawTransaction(signed.serialize());
+await conn.confirmTransaction(sig, 'confirmed');
+
+
+$('chain-status').innerHTML = `On-chain: <span class="ok">${sig}</span>`;
+
+
+await fetch(`${API}/api/receipts/attach-signature`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobId, signature: sig})});
+};
+
+
+loadAgents();
+</script>
+</body>
+</html>

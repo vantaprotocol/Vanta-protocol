@@ -1,0 +1,13 @@
+{
+"name": "vanta-protocol",
+"private": true,
+"workspaces": [
+"packages/*",
+"apps/*"
+],
+"scripts": {
+"build": "npm -ws run build",
+"dev:api": "npm --workspace apps/api run dev",
+"dev:worker": "npm --workspace apps/worker run dev"
+}
+}

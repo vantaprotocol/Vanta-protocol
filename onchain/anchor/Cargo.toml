@@ -1,0 +1,8 @@
+[workspace]
+members = ["programs/vanta"]
+resolver = "2"
+
+
+[profile.release]
+lto = "fat"
+opt-level = "s"

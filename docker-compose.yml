@@ -1,0 +1,19 @@
+version: '3.9'
+services:
+api:
+build: .
+image: vanta-api
+command: npm --workspace apps/api run dev
+ports: ["8787:8787"]
+env_file: .env
+volumes:
+- ./:/usr/src/app
+working_dir: /usr/src/app
+worker:
+build: .
+image: vanta-worker
+command: npm --workspace apps/worker run dev
+env_file: .env
+volumes:
+- ./:/usr/src/app
+working_dir: /usr/src/app

@@ -1,0 +1,45 @@
+services:
+- type: web
+name: vanta-api
+env: node
+plan: starter
+buildCommand: npm i && npm run build
+startCommand: node apps/api/dist/index.js
+envVars:
+- key: NODE_ENV
+value: production
+- key: PORT
+value: 10000
+- key: OPENAI_API_KEY
+sync: false
+- key: OPENAI_MODEL
+value: gpt-4o-mini
+- key: SQLITE_PATH
+value: /var/data/vanta.db
+- key: SOLANA_RPC
+value: https://api.mainnet-beta.solana.com
+- key: CORS_ORIGIN
+value: "*"
+disk:
+name: vanta-data
+mountPath: /var/data
+sizeGB: 1
+- type: worker
+name: vanta-worker
+env: node
+plan: starter
+buildCommand: npm i && npm run build
+startCommand: node apps/worker/dist/index.js
+envVars:
+- key: NODE_ENV
+value: production
+- key: OPENAI_API_KEY
+sync: false
+- key: OPENAI_MODEL
+value: gpt-4o-mini
+- key: SQLITE_PATH
+value: /var/data/vanta.db
+disk:
+name: vanta-data
+mountPath: /var/data
+sizeGB: 1
